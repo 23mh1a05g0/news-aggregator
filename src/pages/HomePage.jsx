@@ -13,6 +13,7 @@ import {
 } from "../services/hackerNewsService";
 
 import HeroSection from "../components/article/HeroSection";
+import StatsSection from "../components/article/StatsSection";
 import SearchBar from "../components/article/SearchBar";
 import SortButton from "../components/article/SortButton";
 import ArticleList from "../components/article/ArticleList";
@@ -33,7 +34,7 @@ function HomePage() {
       try {
         const ids = await fetchTopStories();
 
-        // Optimization #1 - Parallel Fetching
+        // Optimized Parallel Fetching
         const storyPromises = ids
           .slice(0, 500)
           .map((id) => fetchStoryById(id));
@@ -76,11 +77,14 @@ function HomePage() {
     return (
       <div
         style={{
-          textAlign: "center",
-          marginTop: "50px",
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "#f8fafc",
         }}
       >
-        <h2>Loading Stories...</h2>
+        <h2>Loading Latest Stories...</h2>
       </div>
     );
   }
@@ -89,8 +93,11 @@ function HomePage() {
     return (
       <div
         style={{
-          textAlign: "center",
-          marginTop: "50px",
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "#ef4444",
         }}
       >
         <h2>{error}</h2>
@@ -101,43 +108,85 @@ function HomePage() {
   return (
     <div
       style={{
-        padding: "20px",
-        maxWidth: "1200px",
+        padding: "24px",
+        maxWidth: "1280px",
         margin: "0 auto",
       }}
     >
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Search */}
-      <SearchBar
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-      />
+      {/* Statistics Dashboard */}
+      <StatsSection />
 
-      {/* Sort */}
-      <SortButton handleSort={handleSort} />
-
-      {/* Count */}
-      <p
+      {/* Search + Sort Toolbar */}
+      <div
         style={{
-          marginBottom: "20px",
-          fontWeight: "bold",
+          display: "flex",
+          gap: "16px",
+          alignItems: "center",
+          justifyContent: "center",
+          flexWrap: "wrap",
+          marginBottom: "25px",
         }}
       >
-        Showing {filteredArticles.length} of{" "}
-        {articles.length} articles
-      </p>
+        <SearchBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
+
+        <SortButton handleSort={handleSort} />
+      </div>
+
+      {/* Article Count */}
+      <div
+        style={{
+          textAlign: "center",
+          marginBottom: "25px",
+        }}
+      >
+        <p
+          style={{
+            color: "#94a3b8",
+            fontSize: "16px",
+            fontWeight: "600",
+          }}
+        >
+          Showing{" "}
+          <span
+            style={{
+              color: "#38bdf8",
+            }}
+          >
+            {filteredArticles.length}
+          </span>{" "}
+          of{" "}
+          <span
+            style={{
+              color: "#38bdf8",
+            }}
+          >
+            {articles.length}
+          </span>{" "}
+          articles
+        </p>
+      </div>
 
       {/* Virtualized Article List */}
       <ArticleList articles={filteredArticles} />
 
-      {/* Lazy Loaded Component */}
+      {/* Lazy Loaded Performance Section */}
       <Suspense
         fallback={
-          <p style={{ marginTop: "20px" }}>
+          <div
+            style={{
+              textAlign: "center",
+              marginTop: "30px",
+              color: "#94a3b8",
+            }}
+          >
             Loading Performance Info...
-          </p>
+          </div>
         }
       >
         <PerformanceInfo />
