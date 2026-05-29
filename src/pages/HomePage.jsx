@@ -1,5 +1,11 @@
-import { useEffect, useState } from "react";
-import _ from "lodash";
+import {
+  useEffect,
+  useState,
+  lazy,
+  Suspense,
+} from "react";
+
+import sortBy from "lodash/sortBy";
 
 import {
   fetchTopStories,
@@ -10,6 +16,11 @@ import HeroSection from "../components/article/HeroSection";
 import SearchBar from "../components/article/SearchBar";
 import SortButton from "../components/article/SortButton";
 import ArticleList from "../components/article/ArticleList";
+
+// Lazy Loaded Component (Code Splitting)
+const PerformanceInfo = lazy(() =>
+  import("../components/article/PerformanceInfo")
+);
 
 function HomePage() {
   const [articles, setArticles] = useState([]);
@@ -22,19 +33,19 @@ function HomePage() {
       try {
         const ids = await fetchTopStories();
 
-        const stories = [];
+        // Optimization #1 - Parallel Fetching
+        const storyPromises = ids
+          .slice(0, 500)
+          .map((id) => fetchStoryById(id));
 
-        // INTENTIONAL SLOW VERSION
-        // Sequential fetching (Network Waterfall)
-        for (const id of ids.slice(0, 500)) {
-          const story = await fetchStoryById(id);
-          stories.push(story);
-        }
+        const stories = await Promise.all(
+          storyPromises
+        );
 
         setArticles(stories);
       } catch (err) {
-        setError("Failed to load stories");
         console.error(err);
+        setError("Failed to load stories");
       } finally {
         setLoading(false);
       }
@@ -43,16 +54,17 @@ function HomePage() {
     loadStories();
   }, []);
 
-  // Search Filter (intentionally unoptimized)
-  const filteredArticles = articles.filter((article) =>
-    article.title
-      ?.toLowerCase()
-      .includes(searchTerm.toLowerCase())
+  // Search Filter
+  const filteredArticles = articles.filter(
+    (article) =>
+      article.title
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase())
   );
 
-  // Sort by Score (using full lodash import intentionally)
+  // Sort by Score
   const handleSort = () => {
-    const sorted = _.sortBy(
+    const sorted = sortBy(
       filteredArticles,
       "score"
     ).reverse();
@@ -106,7 +118,7 @@ function HomePage() {
       {/* Sort */}
       <SortButton handleSort={handleSort} />
 
-      {/* Article Count */}
+      {/* Count */}
       <p
         style={{
           marginBottom: "20px",
@@ -117,8 +129,19 @@ function HomePage() {
         {articles.length} articles
       </p>
 
-      {/* Articles */}
+      {/* Virtualized Article List */}
       <ArticleList articles={filteredArticles} />
+
+      {/* Lazy Loaded Component */}
+      <Suspense
+        fallback={
+          <p style={{ marginTop: "20px" }}>
+            Loading Performance Info...
+          </p>
+        }
+      >
+        <PerformanceInfo />
+      </Suspense>
     </div>
   );
 }

@@ -1,8 +1,17 @@
+import React from "react";
+
+const dateFormatter = new Intl.DateTimeFormat(
+  "en-US",
+  {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }
+);
+
 function ArticleCard({ article }) {
-  // INTENTIONALLY EXPENSIVE CALCULATION
-  const formattedDate = new Date(
-    article.time * 1000
-  ).toLocaleString();
+  const formattedDate = dateFormatter.format(
+    new Date(article.time * 1000)
+  );
 
   return (
     <div
@@ -43,4 +52,4 @@ function ArticleCard({ article }) {
   );
 }
 
-export default ArticleCard;
+export default React.memo(ArticleCard);
