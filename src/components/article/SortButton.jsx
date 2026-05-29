@@ -1,5 +1,16 @@
-function HeroSection() {
-  return <div>Hero Section</div>;
+function SortButton({ handleSort }) {
+  return (
+    <button
+      onClick={handleSort}
+      style={{
+        padding: "10px 20px",
+        marginBottom: "20px",
+        cursor: "pointer",
+      }}
+    >
+      Sort by Score
+    </button>
+  );
 }
 
-export default HeroSection;
+export default SortButton;
